@@ -24,5 +24,5 @@ from smarts.core.utils.logging import suppress_stdout
 #      way to fix this since they simply use print(...). Disabling logging at the
 #      time of import is our hack.
 with suppress_stdout():
-    from pybullet import *
+    # from pybullet import *
     from pybullet_utils import bullet_client
