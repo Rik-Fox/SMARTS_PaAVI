@@ -27,6 +27,7 @@ from .vehicle import VEHICLE_CONFIGS, VehicleState
 
 #########
 
+
 class TrafficHistoryProvider:
     def __init__(self):
         self._is_setup = False
