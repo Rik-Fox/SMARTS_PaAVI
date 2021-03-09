@@ -28,7 +28,7 @@ scenario = Scenario(
                         begin=("edge-west-WE", 1, 10), end=("edge-west-WE", 1, "max")
                     ),
                     rate=400,
-                    actors={TrafficActor(name="car"): 1.0},
+                    actors={TrafficActor(name="car", depart_speed=20): 1.0},
                 )
             ]
         )
