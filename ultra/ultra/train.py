@@ -45,8 +45,9 @@ num_gpus = 1 if torch.cuda.is_available() else 0
 
 
 # @ray.remote(num_gpus=num_gpus / 2, max_calls=1)
-@ray.remote(num_gpus=num_gpus / 2)
+# @ray.remote(num_gpus=num_gpus / 2)
 def train(
+    config,
     scenario_info,
     num_episodes,
     max_episode_steps,
@@ -56,6 +57,7 @@ def train(
     headless,
     seed,
     log_dir,
+    checkpoint_dir=None
 ):
     torch.set_num_threads(1)
     total_step = 0
@@ -132,6 +134,9 @@ def train(
 
     env.close()
 
+def dummy(config, checkpoint_dir=None):
+    print('Hello')
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("intersection-single-agent")
@@ -203,9 +208,25 @@ if __name__ == "__main__":
     policy_class = str(policy_path) + ":" + str(policy_locator)
 
     ray.init()
-    ray.wait(
-        [
-            train.remote(
+    from ray import tune
+    from functools import partial
+    from ray.tune.schedulers import ASHAScheduler
+    from ray.tune import CLIReporter
+
+    config = {"encoder_key": tune.choice(['no_encoder', 'precog_encoder', 'pointnet_encoder'])}
+    scheduler = ASHAScheduler(
+        metric="loss",
+        mode="min",
+        max_t=10,
+        grace_period=1,
+        reduction_factor=2)
+    reporter = CLIReporter(
+        # parameter_columns=["l1", "l2", "lr", "batch_size"],
+        metric_columns=["loss", "accuracy", "training_iteration"])
+
+    result = tune.run(
+            partial(
+                train,
                 scenario_info=(args.task, args.level),
                 num_episodes=int(args.episodes),
                 max_episode_steps=int(args.max_episode_steps),
@@ -217,7 +238,11 @@ if __name__ == "__main__":
                 headless=args.headless,
                 policy_class=policy_class,
                 seed=args.seed,
-                log_dir=args.log_dir,
-            )
-        ]
-    )
+                log_dir=args.log_dir
+            ),
+            config=config,
+            num_samples=100,
+            scheduler=scheduler,
+            progress_reporter=reporter
+        )
+    best_trial = result.get_best_trial("loss", "min", "last")
