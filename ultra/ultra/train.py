@@ -64,8 +64,8 @@ def train(
     finished = False
 
     AGENT_ID = "007"
-
-    spec = make(locator=policy_class, max_episode_steps=max_episode_steps)
+    print(config)
+    spec = make(locator=policy_class, config=config, max_episode_steps=max_episode_steps)
     env = gym.make(
         "ultra.env:ultra-v0",
         agent_specs={AGENT_ID: spec},
@@ -85,26 +85,26 @@ def train(
         experiment_dir = episode.experiment_dir
 
         # save entire spec [ policy_params, reward_adapter, observation_adapter]
-        if not os.path.exists(f"{experiment_dir}/spec.pkl"):
-            if not os.path.exists(experiment_dir):
-                os.makedirs(experiment_dir)
-            with open(f"{experiment_dir}/spec.pkl", "wb") as spec_output:
-                dill.dump(spec, spec_output, pickle.HIGHEST_PROTOCOL)
+        # if not os.path.exists(f"{experiment_dir}/spec.pkl"):
+        #     if not os.path.exists(experiment_dir):
+        #         os.makedirs(experiment_dir)
+        #     with open(f"{experiment_dir}/spec.pkl", "wb") as spec_output:
+        #         dill.dump(spec, spec_output, pickle.HIGHEST_PROTOCOL)
 
         while not dones["__all__"]:
             if episode.get_itr(AGENT_ID) >= 1000000:
                 finished = True
                 break
-            evaluation_check(
-                agent=agent,
-                agent_id=AGENT_ID,
-                policy_class=policy_class,
-                episode=episode,
-                log_dir=log_dir,
-                max_episode_steps=max_episode_steps,
-                **eval_info,
-                **env.info,
-            )
+            # evaluation_check(
+            #     agent=agent,
+            #     agent_id=AGENT_ID,
+            #     policy_class=policy_class,
+            #     episode=episode,
+            #     log_dir=log_dir,
+            #     max_episode_steps=max_episode_steps,
+            #     **eval_info,
+            #     **env.info,
+            # )
             action = agent.act(state, explore=True)
             observations, rewards, dones, infos = env.step({AGENT_ID: action})
             next_state = observations[AGENT_ID]
@@ -131,11 +131,7 @@ def train(
         episode.record_tensorboard()
         if finished:
             break
-
     env.close()
-
-def dummy(config, checkpoint_dir=None):
-    print('Hello')
 
 
 if __name__ == "__main__":
@@ -207,13 +203,16 @@ if __name__ == "__main__":
     # Required string for smarts' class registry
     policy_class = str(policy_path) + ":" + str(policy_locator)
 
+
+    # TODO cleanup
     ray.init()
     from ray import tune
     from functools import partial
     from ray.tune.schedulers import ASHAScheduler
     from ray.tune import CLIReporter
 
-    config = {"encoder_key": tune.choice(['no_encoder', 'precog_encoder', 'pointnet_encoder'])}
+    from ultra.baselines.ppo.ppo.params import config
+
     scheduler = ASHAScheduler(
         metric="loss",
         mode="min",
@@ -221,7 +220,6 @@ if __name__ == "__main__":
         grace_period=1,
         reduction_factor=2)
     reporter = CLIReporter(
-        # parameter_columns=["l1", "l2", "lr", "batch_size"],
         metric_columns=["loss", "accuracy", "training_iteration"])
 
     result = tune.run(

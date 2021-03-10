@@ -40,7 +40,7 @@ class BaselineAgentSpec(AgentSpec):
         self,
         policy_class,
         action_type,
-        agent_type,
+        config,
         checkpoint_dir=None,
         task=None,
         max_episode_steps=1200,
@@ -53,6 +53,7 @@ class BaselineAgentSpec(AgentSpec):
         policy_class,
         action_type,
         agent_type,
+        config,
         checkpoint_dir=None,
         task=None,
         max_episode_steps=1200,
@@ -75,7 +76,7 @@ class BaselineAgentSpec(AgentSpec):
                 )
                 spec = new_spec
         else:
-            adapter = BaselineAdapter(agent_type=agent_type)
+            adapter = BaselineAdapter(config=config)
             spec = AgentSpec(
                 interface=AgentInterface(
                     waypoints=Waypoints(lookahead=20),
