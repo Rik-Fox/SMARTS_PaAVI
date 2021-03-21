@@ -65,7 +65,7 @@ const treeData = [
         ],
       },
       {
-        title: "Includes Social Agents",
+        title: "Inclucdes Social Agents",
         key: agentModes.socialObs,
       },
     ],

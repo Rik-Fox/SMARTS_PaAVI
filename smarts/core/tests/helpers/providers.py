@@ -41,6 +41,7 @@ class MockProvider:
                 )
                 for vehicle_id, pose, speed in vehicles
             ],
+            traffic_light_systems=[],
         )
 
     def clear_next_provider_state(self):
@@ -58,7 +59,7 @@ class MockProvider:
 
     def step(self, provider_actions, dt, elapsed_sim_time) -> ProviderState:
         if self._next_provider_state is None:
-            return ProviderState(vehicles=[])
+            return ProviderState(vehicles=[], traffic_light_systems=[])
 
         return self._next_provider_state
 

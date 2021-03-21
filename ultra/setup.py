@@ -39,16 +39,15 @@ setup(
     description="Unprotected Left Turn for Robust Agents",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    version="0.2.0",
+    version="0.1.1",
     packages=find_packages(exclude=["tests"]),
     include_package_data=True,
     zip_safe=True,
     python_requires=">=3.7",
     install_requires=[
-        "smarts[train,test]==0.4.14",
+        "smarts[train]==0.4.6",  # Stable version
         "setuptools>=41.0.0,!=50.0",
         "dill",
         "black==20.8b1",
-        "ray[rllib]==1.0.1.post1",
     ],
 )

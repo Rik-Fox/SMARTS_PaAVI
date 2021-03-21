@@ -33,6 +33,8 @@ from ultra.baselines.agent_spec import BaselineAgentSpec
 AGENT_ID = "001"
 seed = 2
 
+adapter = BaselineAdapter()
+
 
 class AdapterTest(unittest.TestCase):
     def test_observation_features(self):
@@ -46,11 +48,19 @@ class AdapterTest(unittest.TestCase):
         ray.init(ignore_reinit_error=True)
         observations = ray.get(run_experiment.remote())
         ray.shutdown()
-        self.assertTrue("low_dim_states" in observations[AGENT_ID])
+        print(observations[AGENT_ID])
+        self.assertTrue("speed" in observations[AGENT_ID])
+        self.assertTrue("relative_goal_position" in observations[AGENT_ID])
+        self.assertTrue("steering" in observations[AGENT_ID])
+        self.assertTrue("angle_error" in observations[AGENT_ID])
         self.assertTrue("social_vehicles" in observations[AGENT_ID])
-
-        self.assertEqual(observations[AGENT_ID]["low_dim_states"].dtype, "float32")
-        self.assertEqual(observations[AGENT_ID]["social_vehicles"].dtype, "float32")
+        self.assertTrue("road_speed" in observations[AGENT_ID])
+        self.assertTrue("start" in observations[AGENT_ID])
+        self.assertTrue("goal" in observations[AGENT_ID])
+        self.assertTrue("heading" in observations[AGENT_ID])
+        self.assertTrue("goal_path" in observations[AGENT_ID])
+        self.assertTrue("ego_position" in observations[AGENT_ID])
+        self.assertTrue("waypoint_paths" in observations[AGENT_ID])
 
     def test_rewards_adapter(self):
         @ray.remote(max_calls=1, num_gpus=0, num_cpus=1)

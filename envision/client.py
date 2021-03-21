@@ -213,9 +213,6 @@ class Client:
                 if not connection_established:
                     self._log.info(f"Attempt {tries} to connect to Envision.")
                 else:
-                    # No information left to send, connection is likely done
-                    if state_queue.empty():
-                        break
                     # When connection lost, retry again every 3 seconds
                     wait_between_retries = 3
                     self._log.info(
@@ -240,16 +237,14 @@ class Client:
         self._state_queue.put(state)
 
     def teardown(self):
-        if not self._headless and self._state_queue:
+        if not self._headless:
             self._state_queue.put(Client.QueueDone())
             self._process.join(timeout=3)
             self._process = None
             self._state_queue.close()
-            self._state_queue = None
 
-        if self._logging_process and self._logging_queue:
+        if self._logging_process:
             self._logging_queue.put(Client.QueueDone())
             self._logging_process.join(timeout=3)
             self._logging_process = None
             self._logging_queue.close()
-            self._logging_queue = None

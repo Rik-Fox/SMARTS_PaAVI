@@ -26,13 +26,12 @@ from itertools import cycle
 from sys import path
 
 import numpy as np
-import yaml, inspect
+import yaml
 from scipy.spatial import distance
 
 from smarts.core.scenario import Scenario
 from smarts.env.hiway_env import HiWayEnv
 from ultra.baselines.adapter import BaselineAdapter
-from ultra.baselines.common.yaml_loader import load_yaml
 
 path.append("./ultra")
 from ultra.utils.common import ego_social_safety, get_closest_waypoint, get_path_to_goal
@@ -58,8 +57,7 @@ class UltraEnv(HiWayEnv):
         else:
             _scenarios = glob.glob(f"{self.scenarios['test']}")
 
-        self.ultra_scores = BaselineAdapter.reward_adapter
-
+        self.ultra_scores = BaselineAdapter()
         super().__init__(
             scenarios=_scenarios,
             agent_specs=agent_specs,
@@ -138,7 +136,7 @@ class UltraEnv(HiWayEnv):
             goal_dist=goal_dist,
             linear_jerk=np.linalg.norm(ego_state.linear_jerk),
             angular_jerk=np.linalg.norm(ego_state.angular_jerk),
-            env_score=self.ultra_scores(observation, highwayenv_score),
+            env_score=self.ultra_scores.reward_adapter(observation, highwayenv_score),
         )
         return info
 

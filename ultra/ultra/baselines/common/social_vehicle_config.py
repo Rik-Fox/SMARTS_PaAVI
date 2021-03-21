@@ -24,9 +24,12 @@ from ultra.baselines.common.social_vehicles_encoders.pointnet_encoder import PNE
 from ultra.baselines.common.social_vehicles_encoders.pointnet_encoder_batched import (
     PNEncoderBatched,
 )
-from ultra.baselines.common.social_vehicle_extraction import *
 from ultra.baselines.common.social_vehicles_encoders.precog_encoder import (
     PrecogFeatureExtractor,
+)
+from ultra.baselines.common.state_preprocessor import (
+    StatePreprocessor,
+    preprocess_state,
 )
 
 social_vehicle_extractors = {
@@ -43,8 +46,7 @@ def get_social_vehicle_configs(
     social_capacity,
     seed,
     social_policy_hidden_units=0,
-    social_policy_init_std=0,
-    **other
+    social_polciy_init_std=0,
 ):
     config = {
         "num_social_features": int(num_social_features),
@@ -96,5 +98,5 @@ def get_social_vehicle_configs(
             "social_feature_encoder_class": None,  # No Encoder; Examples at the bottom of this page
             "social_feature_encoder_params": {},
         }
-    # print(">>>>>", config["encoder"], encoder_key)
+
     return config
