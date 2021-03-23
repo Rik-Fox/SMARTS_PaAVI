@@ -12,6 +12,8 @@ Copy and pasting the git commit messages is __NOT__ enough.
 ### Added 
 - Added `sanity-test` script and asked new users to run `sanity-test` instead of `make test` to ease the setup
 process
+- Added description of map creation and how to modify the map to allow users to create their own traffic routes in docs
+- Added reference to SMARTS paper in front page of docs
 
 ## [0.4.15] - 2021-03-18
 ### Added
