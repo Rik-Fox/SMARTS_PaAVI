@@ -601,7 +601,7 @@ class SMARTS:
             provider_state.vehicles.append(
                 VehicleState(
                     vehicle_id=vehicle.id,
-                    vehicle_type="passenger",
+                    vehicle_type=vehicle.vehicle_type,
                     pose=vehicle.pose,
                     dimensions=vehicle.chassis.dimensions,
                     speed=vehicle.speed,
@@ -639,7 +639,7 @@ class SMARTS:
             provider_state.vehicles.append(
                 VehicleState(
                     vehicle_id=vehicle.id,
-                    vehicle_type="passenger",
+                    vehicle_type=vehicle.vehicle_type,
                     pose=vehicle.pose,
                     dimensions=vehicle.chassis.dimensions,
                     speed=vehicle.speed,
@@ -903,6 +903,7 @@ class SMARTS:
 
                 if self._agent_manager.is_ego(agent_id):
                     actor_type = envision_types.TrafficActorType.Agent
+                    vehicle_type = envision_types.VehicleType.Car
                     mission_route_geometry = (
                         self._vehicle_index.sensor_state_for_vehicle_id(
                             v.vehicle_id
@@ -910,6 +911,7 @@ class SMARTS:
                     )
                 else:
                     actor_type = envision_types.TrafficActorType.SocialAgent
+                    vehicle_type = v.vehicle_type
                     mission_route_geometry = None
 
                 point_cloud = vehicle_obs.lidar_point_cloud or ([], [], [])
@@ -930,7 +932,7 @@ class SMARTS:
                 traffic[v.vehicle_id] = envision_types.TrafficActorState(
                     name=self._agent_manager.agent_name(agent_id),
                     actor_type=actor_type,
-                    vehicle_type=envision_types.VehicleType.Car,
+                    vehicle_type=vehicle_type,
                     position=v.pose.position,
                     heading=v.pose.heading,
                     speed=v.speed,

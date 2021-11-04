@@ -73,9 +73,13 @@ class TrajectoryInterpolationProvider:
             provider_state.vehicles.append(
                 VehicleState(
                     vehicle_id=vehicle_id,
-                    vehicle_type="passenger",
+                    vehicle_type=self._scenario.missions[
+                        vehicle_id
+                    ].vehicle_spec.veh_type,
                     pose=pose,
-                    dimensions=VEHICLE_CONFIGS["passenger"].dimensions,
+                    dimensions=self._scenario.missions[
+                        vehicle_id
+                    ].vehicle_spec.dimensions,
                     speed=speed,
                     source="TrajectoryInterpolation",
                 )

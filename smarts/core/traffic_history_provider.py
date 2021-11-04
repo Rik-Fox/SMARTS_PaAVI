@@ -86,7 +86,11 @@ class TrafficHistoryProvider(Provider):
         pass
 
     def step(
-        self, provider_actions, dt: float, elapsed_sim_time: float
+        self,
+        provider_actions,
+        dt: float,
+        elapsed_sim_time: float,
+        vechicle_type=None,
     ) -> ProviderState:
         if not self._histories:
             return ProviderState(vehicles=[])

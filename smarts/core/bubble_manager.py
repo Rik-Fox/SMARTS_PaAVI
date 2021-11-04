@@ -504,7 +504,7 @@ class BubbleManager:
                 provider.create_vehicle(
                     VehicleState(
                         vehicle_id=vehicle_id,
-                        vehicle_type="passenger",
+                        vehicle_type=vehicle.vehicle_type,
                         pose=vehicle.pose,
                         dimensions=vehicle.chassis.dimensions,
                         speed=vehicle.speed,

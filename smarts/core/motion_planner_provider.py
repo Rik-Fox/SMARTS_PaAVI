@@ -41,6 +41,7 @@ class MotionPlannerProvider(Provider):
         self._vehicle_id_to_index = {}
         self._vehicle_index_to_id = {}
         self._poses = np.empty(shape=(0, 3))  # [[x, y, heading]]; pose of vehicle
+        self._scenario = scenario
         self._is_setup = True
 
         return ProviderState()
@@ -82,18 +83,18 @@ class MotionPlannerProvider(Provider):
         speeds = first_point_of_traj[:, 3]
         poses = first_point_of_traj[:, :3]
         self._poses[indices] = poses
-        vehicle_type = "passenger"  # TODO: allow for multiple vehicle types
+        # vehicle_type = "passenger"  # TODO: allow for multiple vehicle types
 
         return ProviderState(
             vehicles=[
                 VehicleState(
                     vehicle_id=v_id,
-                    vehicle_type=vehicle_type,
+                    vehicle_type=self._scenario.missions[v_id].vehicle_spec.veh_type,
                     pose=Pose.from_center(
                         [*poses[idx][:2], 0],
                         Heading(poses[idx][2]),
                     ),
-                    dimensions=VEHICLE_CONFIGS[vehicle_type].dimensions,
+                    dimensions=self._scenario.missions[v_id].vehicle_spec.dimensions,
                     speed=speeds[idx],
                     source="BEZIER",
                 )

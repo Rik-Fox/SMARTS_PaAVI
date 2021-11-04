@@ -285,7 +285,7 @@ class AgentInterface:
         self.accelerometer = AgentInterface._resolve_config(
             self.accelerometer, Accelerometer
         )
-        assert self.vehicle_type in {"sedan", "bus"}
+        assert self.vehicle_type in {"sedan", "bus", "pedestrian"}
 
     @staticmethod
     def from_type(requested_type: AgentType, **kwargs):
@@ -308,6 +308,7 @@ class AgentInterface:
                 rgb=True,
                 lidar=True,
                 action=ActionSpaceType.Continuous,
+                done_criteria=DoneCriteria(),
             )
         # Uses low dimensional observations
         elif requested_type == AgentType.StandardWithAbsoluteSteering:
@@ -315,23 +316,27 @@ class AgentInterface:
                 waypoints=True,
                 neighborhood_vehicles=True,
                 action=ActionSpaceType.Continuous,
+                done_criteria=DoneCriteria(),
             )
         elif requested_type == AgentType.Standard:
             interface = AgentInterface(
                 waypoints=True,
                 neighborhood_vehicles=True,
                 action=ActionSpaceType.ActuatorDynamic,
+                done_criteria=DoneCriteria(),
             )
         elif requested_type == AgentType.Laner:  # The lane-following agent
             interface = AgentInterface(
                 waypoints=True,
                 action=ActionSpaceType.Lane,
+                done_criteria=DoneCriteria(),
             )
         # The lane-following agent with speed and relative lane change direction
         elif requested_type == AgentType.LanerWithSpeed:
             interface = AgentInterface(
                 waypoints=True,
                 action=ActionSpaceType.LaneWithContinuousSpeed,
+                done_criteria=DoneCriteria(),
             )
         # The trajectory tracking agent which receives a series of reference trajectory
         # points and speeds to follow
@@ -339,11 +344,15 @@ class AgentInterface:
             interface = AgentInterface(
                 waypoints=True,
                 action=ActionSpaceType.Trajectory,
+                done_criteria=DoneCriteria(),
             )
         # The trajectory interpolation agent which recieves a with-time-trajectory and move vehicle
         # with linear time interpolation
         elif requested_type == AgentType.TrajectoryInterpolator:
-            interface = AgentInterface(action=ActionSpaceType.TrajectoryWithTime)
+            interface = AgentInterface(
+                action=ActionSpaceType.TrajectoryWithTime,
+                done_criteria=DoneCriteria(),
+            )
         # The MPC based trajectory tracking agent wich recieves a series of
         # reference trajectory points and speeds and computes the optimal
         # steering action.
@@ -351,6 +360,7 @@ class AgentInterface:
             interface = AgentInterface(
                 waypoints=True,
                 action=ActionSpaceType.MPC,
+                done_criteria=DoneCriteria(),
             )
         # For boid control (controlling multiple vehicles)
         elif requested_type == AgentType.Boid:
@@ -358,27 +368,35 @@ class AgentInterface:
                 waypoints=True,
                 neighborhood_vehicles=True,
                 action=ActionSpaceType.MultiTargetPose,
+                done_criteria=DoneCriteria(),
             )
         # For empty environment, good for testing control
         elif requested_type == AgentType.Loner:
             interface = AgentInterface(
                 waypoints=True,
                 action=ActionSpaceType.Continuous,
+                done_criteria=DoneCriteria(),
             )
         # Plays tag _two vehicles in the env only_
         elif requested_type == AgentType.Tagger:
             interface = AgentInterface(
                 waypoints=True,
                 action=ActionSpaceType.Continuous,
+                done_criteria=DoneCriteria(),
             )
         # For testing imitation learners
         elif requested_type == AgentType.Imitation:
             interface = AgentInterface(
                 neighborhood_vehicles=True,
                 action=ActionSpaceType.Imitation,
+                done_criteria=DoneCriteria(),
             )
         else:
             raise Exception("Unsupported agent type %s" % requested_type)
+
+        # import pdb
+
+        # pdb.set_trace()
 
         return interface.replace(**kwargs)
 

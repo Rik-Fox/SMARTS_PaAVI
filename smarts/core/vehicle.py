@@ -28,7 +28,7 @@ import yaml
 
 from smarts.sstudio.types import UTurn
 
-from . import models
+from . import models, VEHICLE_CONFIGS
 from .chassis import AckermannChassis, BoxChassis, Chassis
 from .colors import SceneColors
 from .coordinates import BoundingBox, Heading, Pose
@@ -60,70 +60,6 @@ class VehicleState:
     source: str = None  # the source of truth for this vehicle state
     linear_velocity: numpy.ndarray = None
     angular_velocity: numpy.ndarray = None
-
-
-@dataclass(frozen=True)
-class VehicleConfig:
-    vehicle_type: str
-    color: tuple
-    dimensions: BoundingBox
-    glb_model: str
-
-
-# A mapping between SUMO's vehicle types and our internal vehicle config.
-# TODO: Don't leak SUMO's types here.
-# XXX: The GLB's dimensions must match the specified dimensions here.
-# TODO: for traffic histories, vehicle (and road) dimensions are set by the dataset
-VEHICLE_CONFIGS = {
-    "passenger": VehicleConfig(
-        vehicle_type="car",
-        color=SceneColors.SocialVehicle.value,
-        dimensions=BoundingBox(length=3.68, width=1.47, height=1.4),
-        glb_model="simple_car.glb",
-    ),
-    "bus": VehicleConfig(
-        vehicle_type="bus",
-        color=SceneColors.SocialVehicle.value,
-        dimensions=BoundingBox(length=7, width=2.25, height=3),
-        glb_model="bus.glb",
-    ),
-    "coach": VehicleConfig(
-        vehicle_type="coach",
-        color=SceneColors.SocialVehicle.value,
-        dimensions=BoundingBox(length=8, width=2.4, height=3.5),
-        glb_model="coach.glb",
-    ),
-    "truck": VehicleConfig(
-        vehicle_type="truck",
-        color=SceneColors.SocialVehicle.value,
-        dimensions=BoundingBox(length=5, width=1.91, height=1.89),
-        glb_model="truck.glb",
-    ),
-    "trailer": VehicleConfig(
-        vehicle_type="trailer",
-        color=SceneColors.SocialVehicle.value,
-        dimensions=BoundingBox(length=10, width=2.5, height=4),
-        glb_model="trailer.glb",
-    ),
-    "pedestrian": VehicleConfig(
-        vehicle_type="pedestrian",
-        color=SceneColors.SocialVehicle.value,
-        dimensions=BoundingBox(length=0.5, width=0.5, height=1.6),
-        glb_model="pedestrian.glb",
-    ),
-    "motorcycle": VehicleConfig(
-        vehicle_type="motorcycle",
-        color=SceneColors.SocialVehicle.value,
-        dimensions=BoundingBox(length=2.5, width=1, height=1.4),
-        glb_model="motorcycle.glb",
-    ),
-}
-
-# TODO: Replace VehicleConfigs w/ the VehicleGeometry class
-class VehicleGeometry:
-    @classmethod
-    def fromfile(cls, path, color):
-        pass
 
 
 class RendererException(Exception):
@@ -323,8 +259,12 @@ class Vehicle:
             # but we use that value here in case we ever expand our history functionality.
             vehicle_type = mission.vehicle_spec.veh_type
             chassis_dims = mission.vehicle_spec.dimensions
+        elif agent_interface.vehicle_type == "pedestrian":
+            vehicle_type = "pedestrian"
+            chassis_dims = VEHICLE_CONFIGS[vehicle_type].dimensions
         else:
             # non-history agents can currently only control passenger vehicles.
+            ### not true with this extension, but still default to it to catch errors
             vehicle_type = "passenger"
             chassis_dims = VEHICLE_CONFIGS[vehicle_type].dimensions
 
@@ -333,6 +273,7 @@ class Vehicle:
                 initial_speed = mission.task.initial_speed
 
         start = mission.start
+        # from_front_bumper still works for anything, just uses leading face
         start_pose = Pose.from_front_bumper(
             front_bumper_position=numpy.array(start.position),
             heading=start.heading,
@@ -345,31 +286,40 @@ class Vehicle:
 
         if agent_interface.vehicle_type == "sedan":
             urdf_name = "vehicle"
+            sumo_vehicle_type = "passenger"
+            URDF = True
         elif agent_interface.vehicle_type == "bus":
             urdf_name = "bus"
+            sumo_vehicle_type = "passenger"
+            URDF = True
+        elif agent_interface.vehicle_type == "pedestrian":
+            # print("Using Box Chassis as no urdf present")
+            sumo_vehicle_type = "pedestrian"
+            URDF = False
         else:
             raise Exception("Vehicle type does not exist!!!")
 
-        if (vehicle_filepath is None) or not os.path.exists(vehicle_filepath):
-            with pkg_resources.path(models, urdf_name + ".urdf") as path:
-                vehicle_filepath = str(path.absolute())
+        if URDF:
+            if (vehicle_filepath is None) or not os.path.exists(vehicle_filepath):
+                with pkg_resources.path(models, urdf_name + ".urdf") as path:
+                    vehicle_filepath = str(path.absolute())
 
-        if (controller_filepath is None) or not os.path.exists(controller_filepath):
-            with pkg_resources.path(
-                models, "controller_parameters.yaml"
-            ) as controller_path:
-                controller_filepath = str(controller_path.absolute())
-        with open(controller_filepath, "r") as controller_file:
-            controller_parameters = yaml.safe_load(controller_file)[
-                agent_interface.vehicle_type
-            ]
+            if (controller_filepath is None) or not os.path.exists(controller_filepath):
+                with pkg_resources.path(
+                    models, "controller_parameters.yaml"
+                ) as controller_path:
+                    controller_filepath = str(controller_path.absolute())
+            with open(controller_filepath, "r") as controller_file:
+                controller_parameters = yaml.safe_load(controller_file)[
+                    agent_interface.vehicle_type
+                ]
 
         chassis = None
         # change this to dynamic_action_spaces later when pr merged
         if (
             agent_interface
             and agent_interface.action in sim.dynamic_action_spaces
-            and not mission.vehicle_spec
+            and URDF
         ):
             chassis = AckermannChassis(
                 pose=start_pose,
@@ -393,6 +343,7 @@ class Vehicle:
             pose=start_pose,
             chassis=chassis,
             color=vehicle_color,
+            sumo_vehicle_type=sumo_vehicle_type,
         )
 
         return vehicle

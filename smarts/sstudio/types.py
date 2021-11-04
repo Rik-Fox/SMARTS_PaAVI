@@ -202,6 +202,9 @@ class SocialAgentActor(Actor):
     initial_speed: float = None
     """Set the initial speed, defaults to 0."""
 
+    # pasted straight from TrafficActor class
+    vehicle_type: str = "passenger"
+
 
 @dataclass(frozen=True)
 class BoidAgentActor(SocialAgentActor):
@@ -312,7 +315,7 @@ class Flow:
 
 @dataclass(frozen=True)
 class JunctionEdgeIDResolver:
-    """ A utility for resolving a junction connection edge """
+    """A utility for resolving a junction connection edge"""
 
     start_edge_id: str
     start_lane_index: int

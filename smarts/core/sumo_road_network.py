@@ -234,7 +234,7 @@ class SumoRoadNetwork:
         self._snap_internal_holes(lane_to_poly)
         self._snap_external_holes(lane_to_poly)
         # Remove break in visible lane connections created when lane enters an intersection
-        self._snap_internal_edges(lane_to_poly)
+        # self._snap_internal_edges(lane_to_poly)
 
         polys = list(lane_to_poly.values())
 

@@ -46,6 +46,8 @@ from smarts.sstudio import types as sstudio_types
 from smarts.sstudio.types import CutIn, EntryTactic, UTurn
 from smarts.sstudio.types import Via as SSVia
 
+from smarts.core import VEHICLE_CONFIGS
+
 
 # XXX: consider using smarts.core.coordinates.Pose for this
 @dataclass(frozen=True)
@@ -387,8 +389,8 @@ class Scenario:
                 missions = pickle.load(f)
 
             missions = [
-                Scenario._extract_mission(actor_and_mission.mission, road_network)
-                for actor_and_mission in missions
+                Scenario._extract_mission(actor_and_mission, road_network, agent_id)
+                for actor_and_mission, agent_id in zip(missions, agents_to_be_briefed)
             ]
 
         if not missions:
@@ -475,18 +477,22 @@ class Scenario:
                 assert isinstance(
                     mission_and_actor.actor, sstudio_types.SocialAgentActor
                 )
+                namespace = os.path.basename(missions_file_path)
+                namespace = os.path.splitext(namespace)[0]
+
+                agent_id = SocialAgentId.new(
+                    mission_and_actor.actor.name, group=namespace
+                )
 
                 actor = mission_and_actor.actor
                 extracted_mission = Scenario._extract_mission(
-                    mission_and_actor.mission, road_network
+                    mission_and_actor, road_network, agent_id
                 )
-                namespace = os.path.basename(missions_file_path)
-                namespace = os.path.splitext(namespace)[0]
 
                 setdefault(agent_bucketer, count, []).append(
                     (
                         SocialAgent(
-                            id=SocialAgentId.new(actor.name, group=namespace),
+                            id=agent_id,
                             name=actor.name,
                             is_boid=False,
                             is_boid_keep_alive=False,
@@ -594,7 +600,7 @@ class Scenario:
         ]
 
     @staticmethod
-    def _extract_mission(mission, road_network):
+    def _extract_mission(actor_and_mission, road_network, agent_id):
         """Takes a sstudio.types.(Mission, EndlessMission, etc.) and converts it to
         the corresponding SMARTS mission types.
         """
@@ -650,6 +656,7 @@ class Scenario:
 
             return tuple(s_vias)
 
+        mission = actor_and_mission.mission
         # For now we discard the route and just take the start and end to form our
         # missions.
         if isinstance(mission, sstudio_types.Mission):
@@ -665,6 +672,14 @@ class Scenario:
             )
             goal = PositionalGoal(position, radius=2)
 
+            vehicle_spec = VehicleSpec(
+                veh_id=agent_id,
+                veh_type=actor_and_mission.actor.vehicle_type,
+                dimensions=VEHICLE_CONFIGS[
+                    actor_and_mission.actor.vehicle_type
+                ].dimensions,
+            )
+
             return Mission(
                 start=start,
                 route_vias=mission.route.via,
@@ -673,6 +688,7 @@ class Scenario:
                 entry_tactic=mission.entry_tactic,
                 task=mission.task,
                 via=to_scenario_via(mission.via, road_network),
+                vehicle_spec=vehicle_spec,
             )
         elif isinstance(mission, sstudio_types.EndlessMission):
             position, heading = to_position_and_heading(
@@ -681,12 +697,21 @@ class Scenario:
             )
             start = Start(position, heading)
 
+            vehicle_spec = VehicleSpec(
+                veh_id=agent_id,
+                veh_type=actor_and_mission.actor.vehicle_type,
+                dimensions=VEHICLE_CONFIGS[
+                    actor_and_mission.actor.vehicle_type
+                ].dimensions,
+            )
+
             return Mission(
                 start=start,
                 goal=EndlessGoal(),
                 start_time=mission.start_time,
                 entry_tactic=mission.entry_tactic,
                 via=to_scenario_via(mission.via, road_network),
+                vehicle_spec=vehicle_spec,
             )
         elif isinstance(mission, sstudio_types.LapMission):
             start_edge_id, start_lane, start_edge_offset = mission.route.begin
