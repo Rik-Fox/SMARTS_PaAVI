@@ -66,11 +66,11 @@ setup(
             "ray[rllib]==1.0.1.post1",  # We use Ray for our multiprocessing needs
         ],
         "train": [
-            "tensorflow==2.2.1",
+            "tensorflow==2.6.0",
             # XXX: TF requires specific version of scipy
-            "scipy==1.4.1",
-            "torch==1.4.0",
-            "torchvision==0.5.0",
+            "scipy==1.7.0",
+            "torch==1.9.0",
+            "torchvision==0.10.0",
             "ray[rllib]==1.0.1.post1",  # We use Ray for our multiprocessing needs
         ],
         "dev": [

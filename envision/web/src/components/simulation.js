@@ -56,9 +56,9 @@ export default function Simulation({
   egoView,
   controlModes,
   canvasRef = null,
-  onElapsedTimesChanged = (current, total) => {},
+  onElapsedTimesChanged = (current, total) => { },
   style = {},
-  playing = true,
+  playing = false,
   playingMode,
 }) {
   const [scene, setScene] = useState(null);
@@ -175,7 +175,7 @@ export default function Simulation({
         } else if (playingMode == PLAYMODES.near_real_time) {
           await sleep(
             msInSec * (elapsed_times[0] - prevElapsedTime) -
-              (Date.now() - waitStartTime)
+            (Date.now() - waitStartTime)
           );
           prevElapsedTime = elapsed_times[0];
         }
@@ -238,6 +238,8 @@ export default function Simulation({
       );
     });
   }, [scene, worldState.scenario_id]);
+
+
 
   return (
     <div

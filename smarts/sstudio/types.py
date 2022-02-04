@@ -521,24 +521,27 @@ class MapZone(Zone):
                 return float(offset)
 
         def pick_remaining_shape_after_split(geometry_collection, expected_point, lane):
+
+            # smarts_paavi changes => update to use geoms attr to access each geom seperately
+
             lane_shape = geometry_collection
             if not isinstance(lane_shape, GeometryCollection):
                 return lane_shape
 
             # For simplicty, we only deal w/ the == 1 or 2 case
-            if len(lane_shape) not in {1, 2}:
+            if len(lane_shape.geoms) not in {1, 2}:
                 return None
 
-            if len(lane_shape) == 1:
-                return lane_shape[0]
+            if len(lane_shape.geoms) == 1:
+                return lane_shape.geoms[0]
 
             # We assume that there are only two splited shapes to choose from
             keep_index = 0
-            if lane_shape[1].minimum_rotated_rectangle.contains(expected_point):
+            if lane_shape.geoms[1].minimum_rotated_rectangle.contains(expected_point):
                 # 0 is the discard piece, keep the other
                 keep_index = 1
 
-            lane_shape = lane_shape[keep_index]
+            lane_shape = lane_shape.geoms[keep_index]
 
             return lane_shape
 

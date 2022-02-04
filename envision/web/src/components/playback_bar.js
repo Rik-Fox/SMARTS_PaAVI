@@ -17,7 +17,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Slider } from "antd";
 import { PauseCircleOutlined, PlayCircleOutlined } from "@ant-design/icons";
 
@@ -25,11 +25,19 @@ const buttonStyle = {
   fontSize: "24px",
 };
 
+function onClick(playing, setPlaying) {
+  setPlaying(!playing);
+  console.log(playing);
+  // useEffect(() => {
+  //   console.log(playing);
+  // });
+}
+
 export default function PlaybackBar({
   onSeek,
   currentTime = 0,
   totalTime = 1,
-  playing = true,
+  playing = false,
   setPlaying,
 }) {
   const [_, setCurrentTime] = useState(currentTime);
@@ -44,7 +52,14 @@ export default function PlaybackBar({
       }}
     >
       <button
-        onClick={() => setPlaying(!playing)}
+        // onClick={onClick}
+        // onClick={(playing, setPlaying) => onClick(playing, setPlaying)}
+        onClick={
+          () => {
+            setPlaying(!playing);
+            console.log(playing);
+          }
+        }
         style={{
           backgroundColor: "Transparent",
           border: "none",

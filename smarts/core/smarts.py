@@ -903,7 +903,7 @@ class SMARTS:
 
                 if self._agent_manager.is_ego(agent_id):
                     actor_type = envision_types.TrafficActorType.Agent
-                    vehicle_type = envision_types.VehicleType.Car
+                    vehicle_type = v.vehicle_type  # envision_types.VehicleType.Car
                     mission_route_geometry = (
                         self._vehicle_index.sensor_state_for_vehicle_id(
                             v.vehicle_id

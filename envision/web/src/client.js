@@ -54,7 +54,14 @@ export default class Client {
   async fetchSimulationIds() {
     let url = new URL(this.endpoint);
     url.pathname = "simulations";
-    let response = await fetch(url);
+    let response = await fetch(url, {
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+
+      }
+    }
+    );
     if (!response.ok) {
       console.error("Unable to fetch simulation IDs");
       return [];
@@ -104,15 +111,15 @@ export default class Client {
               value === "NaN"
                 ? Nan
                 : value === "Infinity"
-                ? Infinity
-                : value === "-Infinity"
-                ? -Infinity
-                : value
+                  ? Infinity
+                  : value === "-Infinity"
+                    ? -Infinity
+                    : value
             );
             if (
               stateQueue.length > 0 &&
               frame.current_elapsed_time <=
-                stateQueue[stateQueue.length - 1].current_elapsed_time
+              stateQueue[stateQueue.length - 1].current_elapsed_time
             ) {
               // if it's moved back in time, it was from a seek and we're now
               // going to receive those frames again, so flush.
@@ -166,7 +173,7 @@ export default class Client {
         socket.onerror = (error) => {
           console.warn(
             `Socket encountered error=${error.message} ` +
-              `trying to connect to endpoint=${url}`
+            `trying to connect to endpoint=${url}`
           );
           reject(error);
         };

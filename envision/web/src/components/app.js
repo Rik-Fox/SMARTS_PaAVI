@@ -45,7 +45,7 @@ function App({ client }) {
   const [simulationIds, setSimulationIds] = useState([]);
   const [showControls, setShowControls] = useState(true);
   const [controlModes, setControlModes] = useState({
-    [attrs.score]: true,
+    [attrs.score]: false,
     [attrs.speed]: false,
     [attrs.position]: false,
     [attrs.heading]: false,
@@ -55,7 +55,8 @@ function App({ client }) {
   const [egoView, setEgoView] = useState(false);
   const [currentElapsedTime, setCurrentElapsedTime] = useState(0);
   const [totalElapsedTime, setTotalElapsedTime] = useState(1);
-  const [playing, setPlaying] = useState(true);
+  const [playing, setPlaying] = useState(false);
+  // console.log(playing);
   const [playingMode, setPlayingMode] = useState(PLAYMODES.near_real_time);
   const simulationCanvasRef = useRef(null);
   const recorderRef = useRef(null);

@@ -134,3 +134,6 @@ ultra/ultra/scenarios/task*/*/
 
 # Singularity
 *.sif
+
+# History files
+.history
